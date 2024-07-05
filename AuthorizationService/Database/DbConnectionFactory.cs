@@ -10,11 +10,9 @@ public interface IDbConnectionFactory
 
 public class NpgsqlConnectionFactory(string connectionString) : IDbConnectionFactory
 {
-	private readonly string _connectionString = connectionString;
-	
 	public async Task<IDbConnection> CreateConnectionAsync(CancellationToken token)
 	{
-		var connection = new NpgsqlConnection(_connectionString);
+		var connection = new NpgsqlConnection(connectionString);
 		await connection.OpenAsync(token);
 		return connection;
 	}

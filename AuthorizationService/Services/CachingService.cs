@@ -22,8 +22,6 @@ public interface ICachingService
 
 public class CachingService(IDistributedCache distributedCache) : ICachingService
 {
-    private readonly IDistributedCache _distributedCache = distributedCache;
-
     public async Task SetRecordAsync(string key, string value, TimeSpan? absoluteExpireTime = null,
         TimeSpan? unusedExpireTime = null, CancellationToken? cancellationToken = null)
     {
@@ -33,7 +31,7 @@ public class CachingService(IDistributedCache distributedCache) : ICachingServic
             AbsoluteExpirationRelativeToNow = absoluteExpireTime ?? TimeSpan.FromSeconds(60)
         };
         
-        await _distributedCache.SetStringAsync(key, value, options, cancellationToken ?? default);
+        await distributedCache.SetStringAsync(key, value, options, cancellationToken ?? default);
     }
     
     public async Task SetRecordAsync<T>(string key, T value, TimeSpan? absoluteExpireTime = null,
@@ -46,17 +44,17 @@ public class CachingService(IDistributedCache distributedCache) : ICachingServic
         };
         
         var jsonData = JsonSerializer.Serialize(value);
-        await _distributedCache.SetStringAsync(key, jsonData, options, cancellationToken ?? default);
+        await distributedCache.SetStringAsync(key, jsonData, options, cancellationToken ?? default);
     }
     
     public async Task<string?> GetRecordAsync(string key, CancellationToken? cancellationToken = null)
     {
-        return await _distributedCache.GetStringAsync(key, cancellationToken ?? default);
+        return await distributedCache.GetStringAsync(key, cancellationToken ?? default);
     }
     
     public async Task<T?> GetRecordAsync<T>(string key, CancellationToken? cancellationToken = null)
     {
-        var jsonData = await _distributedCache.GetStringAsync(key, cancellationToken ?? default);
+        var jsonData = await distributedCache.GetStringAsync(key, cancellationToken ?? default);
         
         return jsonData is null
             ? default
@@ -65,6 +63,6 @@ public class CachingService(IDistributedCache distributedCache) : ICachingServic
     
     public async Task RemoveRecord(string key, CancellationToken? cancellationToken = null)
     {
-        await _distributedCache.RemoveAsync(key, cancellationToken ?? default);
+        await distributedCache.RemoveAsync(key, cancellationToken ?? default);
     }
 }

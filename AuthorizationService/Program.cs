@@ -3,6 +3,7 @@ using AuthorizationService.Database;
 using AuthorizationService.DTOs.Requests;
 using AuthorizationService.Repositories;
 using AuthorizationService.Services;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Models;
 using NLog.Web;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -59,46 +60,47 @@ public static class Program
 		await dbInitializer.InitializeAsync();
 		
 		// TODO: Refactor mappings
-		app.MapPost(ApiEndpointsUrls.RegisterBase, async (RegistrationRequest regData, 
-				IAuthService authService) =>
+		app.MapPost(ApiEndpointsUrls.Register, async ([FromBody] RegistrationRequest regData, 
+				[FromServices] IAuthService authService) =>
 			{
 				var isRegistered = await authService.Register(regData);
 				
 				return isRegistered
-					? TypedResults.Ok()
+					? Results.Created()
 					: Results.Conflict();
 			})
-			.Produces(StatusCodes.Status200OK)
+			.Produces(StatusCodes.Status201Created)
 			.Produces(StatusCodes.Status409Conflict)
-			.WithName("Register")
+			.WithName(ApiEndpointsUrls.Register)
 			.WithOpenApi();
 		
-		app.MapPost(ApiEndpointsUrls.LoginBase, async (AuthorizationRequest authData, 
-				IAuthService authService) =>
+		app.MapPost(ApiEndpointsUrls.LoginBase, async ([FromBody] AuthorizationRequest authData, 
+				[FromServices] IAuthService authService) =>
 			{
 				var regInfo = await authService.Login(authData);
 				
-				return regInfo != null
+				return regInfo is not null
 					? TypedResults.Ok(regInfo)
-					: Results.Conflict();
+					: Results.NotFound();
 			})
 			.Produces(StatusCodes.Status200OK)
-			.Produces(StatusCodes.Status409Conflict)
-			.WithName("Login")
+			.Produces(StatusCodes.Status404NotFound)
+			.WithName(ApiEndpointsUrls.LoginBase)
 			.WithOpenApi();
 		
-		app.MapGet(ApiEndpointsUrls.InitLogin, async (string username, 
-				IAuthService authService) =>
+		app.MapGet(ApiEndpointsUrls.InitLogin, async ([FromQuery] string username, 
+				[FromServices] IAuthService authService) =>
 			{
 				var regInfo = await authService.InitLogin(username);
 				
-				return regInfo != null
+				// TODO: Return authorization type
+				return regInfo is not null
 					? TypedResults.Ok(regInfo)
 					: Results.NotFound();
 			})
 			.Produces(StatusCodes.Status200OK)
 			.Produces(StatusCodes.Status409Conflict)
-			.WithName("LoginInit")
+			.WithName(ApiEndpointsUrls.InitLogin)
 			.WithOpenApi();
 		
 		await app.RunAsync();

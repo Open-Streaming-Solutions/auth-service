@@ -1,7 +1,3 @@
 ﻿namespace AuthorizationService.DTOs.Requests;
 
-public class RegistrationRequest
-{
-	public string Username { get; init; }
-	public string Password { get; init; }
-}
+public record RegistrationRequest(string Username, string Password);

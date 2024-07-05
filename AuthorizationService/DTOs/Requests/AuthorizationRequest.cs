@@ -1,8 +1,10 @@
 ﻿namespace AuthorizationService.DTOs.Requests;
 
-public class AuthorizationRequest
-{
-	public string Username { get; init; }
-	public string Secret { get; init; }
-	public string? Challenge { get; init; }
-}
+/// <summary>
+/// Authorization request DTO
+/// </summary>
+/// <param name="Username">User login</param>
+/// <param name="Secret">Hash string calculated by the formula
+/// SHA256(scrypt(PASSWORD, SERVER_SALT), SERVER_CHALLENGE, CLIENT_CHALLENGE)</param>
+/// <param name="Challenge">Client-generated challenge</param>
+public record AuthorizationRequest(string Username, string? Secret, string? Challenge);

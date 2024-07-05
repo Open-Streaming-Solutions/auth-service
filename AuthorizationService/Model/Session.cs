@@ -1,9 +1,9 @@
 ﻿namespace AuthorizationService.Model;
 
-public class Session
+public record Session
 {
-	public Guid Id { get; set; }
-	public string UserAgent { get; set; }
-	public DateTime IssuedAt { get; set; }
-	public DateTime LastRefresh { get; set; }
+	public required Guid Id { get; init; }
+	public required string UserAgent { get; init; }
+	public required DateTime IssuedAt { get; init; }
+	public required DateTime LastRefresh { get; init; }
 }

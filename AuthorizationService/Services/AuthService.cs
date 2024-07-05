@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Security.Cryptography;
+using System.Text;
 using AuthorizationService.DTOs.Requests;
 using AuthorizationService.DTOs.Responses;
 using AuthorizationService.Model;
@@ -11,7 +12,6 @@ namespace AuthorizationService.Services;
 public interface IAuthService
 {
 	public Task<bool> Register(RegistrationRequest authData);
-	
 	public Task<AuthorizationResponse?> InitLogin(string username);
 	public Task<AuthorizationResponse?> Login(AuthorizationRequest authorizationData);
 }
@@ -20,15 +20,11 @@ public class AuthService(IAuthRepository authRepository, IUserService userServic
 	ICachingService cache, ILogger<AuthService> logger) : IAuthService
 {
 	// TODO: Logging
-	private readonly ILogger<AuthService> _logger = logger;
-	private readonly ICachingService _cache = cache;
-	private readonly IUserService _userService = userService;
-	private readonly IAuthRepository _authRepository = authRepository;
-	
+
 	public async Task<bool> Register(RegistrationRequest authData)
 	{
-		var userId = await _userService.GetUserIdByUsername(authData.Username);
-
+		var userId = await userService.GetUserIdByUsername(authData.Username);
+		
 		if (userId.HasValue)
 		{
 			return false;
@@ -39,9 +35,9 @@ public class AuthService(IAuthRepository authRepository, IUserService userServic
 		
 		var passBytes = Encoding.UTF8.GetBytes(authData.Password);
 		var saltBytes = Encoding.UTF8.GetBytes(salt);
-
-		const int cost = 32768, blockSize = 8, parallel = 1, maxThreads = 1, keyLength = 255;
-
+		
+		const int cost = 16384, blockSize = 8, parallel = 1, maxThreads = 1, keyLength = 255;
+		
 		var scryptedPass = SCrypt.ComputeDerivedKey(
             passBytes,
             saltBytes,
@@ -52,48 +48,83 @@ public class AuthService(IAuthRepository authRepository, IUserService userServic
             keyLength
 		);
 		
-		await _authRepository.AddAuthAsync(new Authorization
-		{
-			Id = guid,
-			Salt = salt,
-			Password = Convert.ToBase64String(scryptedPass)
-		});
-		await _userService.CreateUser(guid, authData.Username);
-
+		await authRepository.AddAuthAsync(new Authorization(
+			guid, GetSha256StringFromString(Convert.ToBase64String(scryptedPass)), salt));
+		await userService.CreateUser(guid, authData.Username);
+		
 		return true;
 	}
-
+	
 	public async Task<AuthorizationResponse?> InitLogin(string username)
 	{
-		var userId = await _userService.GetUserIdByUsername(username);
-
-		if (userId == null)
+		var userId = await userService.GetUserIdByUsername(username);
+		
+		if (!userId.HasValue)
 		{
 			return null;
 		}
 		
-		var authData = await _authRepository.GetAuthByIdAsync((Guid)userId);
-
-		if (authData == null)
+		var authData = await authRepository.GetAuthByIdAsync(userId.Value);
+		
+		if (authData is null)
 		{
 			return null;
 		}
-
-		var authResponse = new AuthorizationResponse
-		{
-			Salt = authData.Salt,
-			Challenge = Crypter.Sha512.GenerateSalt()
-		};
 		
-		await _cache.SetRecordAsync($"LOGIN_SALT_{username}", authResponse, TimeSpan.FromMinutes(5));
+		var authResponse = new AuthorizationResponse(authData.Salt, Crypter.Sha512.GenerateSalt());
+		
+		await cache.SetRecordAsync($"LOGIN_DATA_{username}", authResponse, TimeSpan.FromMinutes(30));
 		
 		return authResponse;
 	}
 
 	public async Task<AuthorizationResponse?> Login(AuthorizationRequest authData)
 	{
-		// TODO: Login method
+		// TODO: Remove this call. Try invariant logic
+		var userId = await userService.GetUserIdByUsername(authData.Username);
 		
-		return null;
+		if (!userId.HasValue)
+		{
+			return null;
+		}
+		
+		var cachedAuthData = await cache.GetRecordAsync<AuthorizationResponse>($"LOGIN_DATA_{authData.Username}");
+
+		if (cachedAuthData is null)
+		{
+			return null;
+		}
+
+		var storedAuth = await authRepository.GetAuthByIdAsync(userId.Value);
+		
+		if (storedAuth is null)
+		{
+			return null;
+		}
+
+		var serverData = $"{storedAuth.Secret}{cachedAuthData.Challenge}{authData.Challenge}";
+		var serverHash = GetSha256StringFromString(serverData);
+		
+		if (authData.Secret != serverHash)
+		{
+			return null;
+		}
+		
+		// TODO: Create new session
+		
+		throw new NotImplementedException();
 	}
+
+	private static string GetSha256StringFromString(string value)
+    {
+        var builder = new StringBuilder();
+        var result = SHA256.HashData(Encoding.UTF8.GetBytes(value));
+
+        foreach (var b in result)
+        {
+            builder.Append(b.ToString("x2"));
+        }
+
+        return builder.ToString();
+    }
 }
