@@ -9,7 +9,7 @@
 	</PropertyGroup>
 	
 	<ItemGroup>
-		<PackageReference Include="CryptSharpOfficial" Version="2.1.0" />
+		<PackageReference Include="CryptSharpStandard" Version="1.0.0" />
 		<PackageReference Include="Dapper" Version="2.1.35" />
 		<PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.6"/>
 		<PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="8.0.6" />
