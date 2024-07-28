@@ -1,7 +1,7 @@
 ﻿using System.Text.Json;
 using Microsoft.Extensions.Caching.Distributed;
 
-namespace AuthorizationService.Services;
+namespace AuthorizationService.Api.Services;
 
 public interface ICachingService
 {

@@ -1,6 +1,6 @@
 ﻿using Dapper;
 
-namespace AuthorizationService.Database;
+namespace AuthorizationService.Api.Database;
 
 public class DbInitializer(IDbConnectionFactory dbConnectionFactory)
 {

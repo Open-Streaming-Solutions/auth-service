@@ -1,4 +1,4 @@
-﻿namespace AuthorizationService.Services;
+﻿namespace AuthorizationService.Api.Services;
 
 public interface IUserService
 {

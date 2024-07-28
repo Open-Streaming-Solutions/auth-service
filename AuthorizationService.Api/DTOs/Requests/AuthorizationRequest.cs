@@ -1,4 +1,4 @@
-﻿namespace AuthorizationService.DTOs.Requests;
+﻿namespace AuthorizationService.Api.DTOs.Requests;
 
 /// <summary>
 /// Authorization request DTO

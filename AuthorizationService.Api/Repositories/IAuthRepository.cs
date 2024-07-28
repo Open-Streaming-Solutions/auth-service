@@ -1,8 +1,8 @@
-﻿using Dapper;
-using AuthorizationService.Database;
-using AuthorizationService.Model;
+﻿using AuthorizationService.Api.Database;
+using AuthorizationService.Api.Model;
+using Dapper;
 
-namespace AuthorizationService.Repositories;
+namespace AuthorizationService.Api.Repositories;
 
 public interface IAuthRepository
 {

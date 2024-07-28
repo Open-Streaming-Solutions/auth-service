@@ -1,13 +1,13 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
-using AuthorizationService.DTOs.Requests;
-using AuthorizationService.DTOs.Responses;
-using AuthorizationService.Model;
-using AuthorizationService.Repositories;
+using AuthorizationService.Api.DTOs.Requests;
+using AuthorizationService.Api.DTOs.Responses;
+using AuthorizationService.Api.Model;
+using AuthorizationService.Api.Repositories;
 using CryptSharp;
 using CryptSharp.Utility;
 
-namespace AuthorizationService.Services;
+namespace AuthorizationService.Api.Services;
 
 public interface IAuthService
 {

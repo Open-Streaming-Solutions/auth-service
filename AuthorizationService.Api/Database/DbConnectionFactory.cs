@@ -1,7 +1,7 @@
 ﻿using System.Data;
 using Npgsql;
 
-namespace AuthorizationService.Database;
+namespace AuthorizationService.Api.Database;
 
 public interface IDbConnectionFactory
 {

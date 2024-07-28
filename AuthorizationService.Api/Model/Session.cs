@@ -1,4 +1,4 @@
-﻿namespace AuthorizationService.Model;
+﻿namespace AuthorizationService.Api.Model;
 
 public record Session
 {

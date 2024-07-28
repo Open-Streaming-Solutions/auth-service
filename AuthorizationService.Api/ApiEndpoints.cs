@@ -1,4 +1,4 @@
-﻿namespace AuthorizationService;
+﻿namespace AuthorizationService.Api;
 
 public class ApiEndpointsUrls
 {
